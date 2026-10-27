@@ -1,25 +1,90 @@
 'use client';
-import { useState } from 'react';
+
+import { useState, type FormEvent } from 'react';
 import type { ScriptResult } from '../lib/types';
+
+type InputMode = 'text' | 'url';
+
 export default function Home() {
+  const [mode, setMode] = useState<InputMode>('text');
   const [input, setInput] = useState('');
   const [result, setResult] = useState<ScriptResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  async function createScript(event: React.FormEvent<HTMLFormElement>) {
+
+  function switchMode(next: InputMode) {
+    setMode(next);
+    setInput('');
+    setError('');
+    setResult(null);
+  }
+
+  async function createScript(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!input.trim()) { setError('블로그 URL 또는 본문을 입력해 줘.'); setResult(null); return; }
-    setLoading(true); setError(''); setResult(null);
+    if (!input.trim()) {
+      setError(mode === 'url' ? '블로그 URL을 입력해 줘.' : '블로그 본문을 입력해 줘.');
+      setResult(null);
+      return;
+    }
+    setLoading(true);
+    setError('');
+    setResult(null);
     try {
-      const response = await fetch('/api/script', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: input.trim() }) });
+      const response = await fetch('/api/script', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: input.trim() }),
+      });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || '대본을 생성하지 못했어.');
       setResult(data as ScriptResult);
-    } catch (err) { setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했어.'); }
-    finally { setLoading(false); }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했어.');
+    } finally {
+      setLoading(false);
+    }
   }
-  return <main className="shell"><header><span className="eyebrow">BLOG → SCRIPT</span><h1>블로그 글을<br />영상 대본으로.</h1><p className="intro">URL 또는 본문을 넣으면 대본과 4~6개 장면 구성을 만들어 줘.</p></header>
-    <form onSubmit={createScript} className="panel"><label htmlFor="content">블로그 URL 또는 본문</label><textarea id="content" value={input} onChange={e => {setInput(e.target.value); if(error) setError('');}} placeholder="블로그 URL을 붙여넣거나 본문을 입력해 줘." rows={7} disabled={loading} aria-describedby="input-hint"/><p id="input-hint" className="hint">URL은 공개적으로 접근 가능한 페이지여야 해.</p><button disabled={loading} type="submit">{loading ? '대본 만드는 중…' : '대본 만들기'}</button>{error && <p className="error" role="alert">{error}</p>}</form>
-    <section className="output" aria-live="polite"><h2>생성 결과</h2>{loading ? <div className="placeholder" role="status">대본과 장면을 구성하고 있어…</div> : result ? <><article className="panel"><h3>대본</h3><p className="script">{result.script}</p></article><h3 className="scene-title">장면 구성 <span>{result.scenes.length}개</span></h3><div className="scenes">{result.scenes.map(scene => <article className="scene" key={scene.order}><span>SCENE {String(scene.order).padStart(2,'0')}</span><p>{scene.description}</p></article>)}</div></> : <div className="placeholder">아직 생성된 대본이 없어. 위에서 콘텐츠를 입력해 줘.</div>}</section>
-  </main>;
+
+  return (
+    <main className="app-shell">
+      <nav className="topbar" aria-label="서비스 정보">
+        <div className="brand"><span className="brand-mark">✳</span> POPSCRIPT<span className="brand-dot">.</span></div>
+        <span className="top-tag">BLOG → VIDEO SCRIPT <span aria-hidden="true">↗</span></span>
+      </nav>
+
+      <header className="hero">
+        <div className="hero-copy">
+          <span className="kicker"><span className="sparkle">✦</span> YOUR CONTENT, REMIXED</span>
+          <h1>글에서<br /><span className="title-highlight">장면으로!</span><span className="title-star" aria-hidden="true">✳</span></h1>
+          <p>블로그 콘텐츠를 영상 대본과 스토리보드로.<br className="desktop-break" /> 아이디어를 다음 장면으로 연결해 봐.</p>
+          <div className="hero-stickers" aria-hidden="true"><span>CREATE ✦</span><span>PLAY ▶</span><span>REPEAT ↗</span></div>
+        </div>
+        <div className="hero-art" aria-hidden="true"><div className="art-orbit orbit-one"/><div className="art-orbit orbit-two"/><div className="art-card art-card-back">BLOG<br />POST <span>✎</span></div><div className="art-arrow">➜</div><div className="art-card art-card-front"><span className="art-play">▶</span><strong>SCENE<br />01—06</strong></div><span className="art-spark">✳</span></div>
+      </header>
+
+      <div className="workspace">
+        <section className="editor-panel" aria-labelledby="editor-title">
+          <div className="section-heading"><span className="step">01 / INPUT</span><h2 id="editor-title">콘텐츠 넣기 <span aria-hidden="true">↘</span></h2></div>
+          <div className="mode-tabs" role="group" aria-label="입력 방식">
+            <button type="button" className={mode === 'text' ? 'mode-tab active' : 'mode-tab'} aria-pressed={mode === 'text'} onClick={() => switchMode('text')} disabled={loading}>✎ 본문 입력</button>
+            <button type="button" className={mode === 'url' ? 'mode-tab active' : 'mode-tab'} aria-pressed={mode === 'url'} onClick={() => switchMode('url')} disabled={loading}>↗ URL 입력</button>
+          </div>
+          <form onSubmit={createScript}>
+            <label className="input-label" htmlFor="content">{mode === 'url' ? 'BLOG URL' : 'BLOG CONTENT'}</label>
+            {mode === 'url' ? <input id="content" type="url" value={input} onChange={e => { setInput(e.target.value); setError(''); }} placeholder="https://example.com/post" disabled={loading} aria-describedby="input-hint" /> : <textarea id="content" value={input} onChange={e => { setInput(e.target.value); setError(''); }} placeholder="블로그 본문을 여기에 붙여넣어 줘. 어떤 이야기가 영상으로 변할까?" rows={8} disabled={loading} aria-describedby="input-hint" />}
+            <p id="input-hint" className="input-hint">{mode === 'url' ? 'URL 자동 본문 추출은 아직 지원하지 않아. 현재는 본문 입력을 이용해 줘.' : '블로그 본문을 직접 입력하면 AI가 대본과 4~6개 장면을 구성해.'}</p>
+            <button className="generate-button" type="submit" disabled={loading || mode === 'url'}><span>{loading ? '대본 만드는 중…' : '대본 만들기'}</span><span className={loading ? 'button-icon spinning' : 'button-icon'}>{loading ? '✳' : '↗'}</span></button>
+            {error && <p className="error-message" role="alert">⚠ {error}</p>}
+          </form>
+          <div className="editor-footer"><span>✦ AI SCRIPT STUDIO</span><span>MAKE SOMETHING NEW!</span></div>
+        </section>
+
+        <section className="result-panel" aria-labelledby="result-title" aria-live="polite">
+          <div className="section-heading"><span className="step">02 / OUTPUT</span><h2 id="result-title">완성된 스토리 <span aria-hidden="true">✳</span></h2></div>
+          {loading ? <div className="empty-state" role="status"><span className="empty-icon spinning">✳</span><h3>장면을 조립하는 중!</h3><p>대본과 스토리보드를 만들고 있어.</p></div> : result ? <div className="result-content"><article className="script-card"><div className="card-topline"><span>✦ GENERATED SCRIPT</span><span>01</span></div><h3>영상 대본</h3><p>{result.script}</p></article><div className="storyboard-heading"><h3>STORYBOARD <span>↘</span></h3><span>{String(result.scenes.length).padStart(2, '0')} SCENES</span></div><div className="scene-grid">{result.scenes.map((scene, index) => <article className={`scene-card scene-color-${index % 4}`} key={`${scene.order}-${index}`}><div className="scene-top"><span>SCENE</span><span>↗</span></div><strong>{String(scene.order).padStart(2, '0')}</strong><p>{scene.description}</p></article>)}</div></div> : <div className="empty-state"><div className="empty-illustration" aria-hidden="true"><span className="empty-sheet">✎<br />— —<br />— —</span><span className="empty-arrow">➜</span><span className="empty-film">▶</span></div><h3>여기서 이야기가 시작돼!</h3><p>본문을 입력하고 버튼을 누르면<br />대본과 장면 카드가 나타나.</p><span className="empty-caption">WAITING FOR YOUR STORY ✦</span></div>}
+        </section>
+      </div>
+      <footer className="footer"><span>POPSCRIPT ✳</span><span>FROM WORDS TO SCENES © 2026</span></footer>
+    </main>
+  );
 }
