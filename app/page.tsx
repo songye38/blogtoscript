@@ -66,8 +66,8 @@ export default function Home() {
         <section className="editor-panel" aria-labelledby="editor-title">
           <div className="section-heading"><span className="step">01 / INPUT</span><h2 id="editor-title">콘텐츠 넣기 <span aria-hidden="true">↘</span></h2></div>
           <div className="mode-tabs" role="group" aria-label="입력 방식">
-            <button type="button" className={mode === 'text' ? 'mode-tab active' : 'mode-tab'} aria-pressed={mode === 'text'} onClick={() => switchMode('text')} disabled={loading}>✎ 본문 입력</button>
-            <button type="button" className={mode === 'url' ? 'mode-tab active' : 'mode-tab'} aria-pressed={mode === 'url'} onClick={() => switchMode('url')} disabled={loading}>↗ URL 입력</button>
+            <button type="button" className={mode === 'text' ? 'mode-tab active' : 'mode-tab'} aria-pressed={mode === 'text'} onClick={() => switchMode('text')} disabled={loading}>✎ 본문 내용을 입력하기</button>
+            <button type="button" className={mode === 'url' ? 'mode-tab active' : 'mode-tab'} aria-pressed={mode === 'url'} onClick={() => switchMode('url')} disabled={loading}>↗ URL 입력하기</button>
           </div>
           <form onSubmit={createScript}>
             <label className="input-label" htmlFor="content">{mode === 'url' ? 'BLOG URL' : 'BLOG CONTENT'}</label>
