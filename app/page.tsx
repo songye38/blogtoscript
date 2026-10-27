@@ -73,7 +73,20 @@ export default function Home() {
             <label className="input-label" htmlFor="content">{mode === 'url' ? 'BLOG URL' : 'BLOG CONTENT'}</label>
             {mode === 'url' ? <input id="content" type="url" value={input} onChange={e => { setInput(e.target.value); setError(''); }} placeholder="https://example.com/post" disabled={loading} aria-describedby="input-hint" /> : <textarea id="content" value={input} onChange={e => { setInput(e.target.value); setError(''); }} placeholder="블로그 본문을 여기에 붙여넣어 줘. 어떤 이야기가 영상으로 변할까?" rows={8} disabled={loading} aria-describedby="input-hint" />}
             <p id="input-hint" className="input-hint">{mode === 'url' ? 'URL 자동 본문 추출은 아직 지원하지 않아. 현재는 본문 입력을 이용해 줘.' : '블로그 본문을 직접 입력하면 AI가 대본과 4~6개 장면을 구성해.'}</p>
-            <button className="generate-button" type="submit" disabled={loading || mode === 'url'}><span>{loading ? '대본 만드는 중…' : '대본 만들기'}</span><span className={loading ? 'button-icon spinning' : 'button-icon'}>{loading ? '✳' : '↗'}</span></button>
+           <button
+  className="generate-button"
+  type="submit"
+  disabled={loading || mode === 'url' || !input.trim()}
+>
+  <span>{loading ? '대본 만드는 중…' : '대본 만들기'}</span>
+  <span className={loading ? 'button-icon spinning' : 'button-icon'}>
+    {loading ? '✳' : '↗'}
+  </span>
+</button>
+            
+            
+            
+            
             {error && <p className="error-message" role="alert">⚠ {error}</p>}
           </form>
           <div className="editor-footer"><span>✦ AI SCRIPT STUDIO</span><span>MAKE SOMETHING NEW!</span></div>
@@ -85,6 +98,6 @@ export default function Home() {
         </section>
       </div>
       <footer className="footer"><span>POPSCRIPT ✳</span><span>FROM WORDS TO SCENES © 2026</span></footer>
-    </main>
+    </main >
   );
 }
