@@ -55,7 +55,7 @@ export default function Home() {
       <header className="hero">
         <div className="hero-copy">
           <span className="kicker"><span className="sparkle">✦</span> YOUR CONTENT, REMIXED</span>
-          <h1>글에서 <span className="title-highlight">장면으로!</span><span className="title-star" aria-hidden="true">✳</span></h1>
+          <h1>블로그 글 하나로, 쇼츠 영상 완성!</span><span className="title-star" aria-hidden="true">✳</span></h1>
           <p>블로그 링크만 주면 바로 쇼츠 영상을 만들 수 있어요.<br className="desktop-break" /></p>
           <div className="hero-stickers" aria-hidden="true"><span>CREATE ✦</span><span>PLAY ▶</span><span>REPEAT ↗</span></div>
         </div>
